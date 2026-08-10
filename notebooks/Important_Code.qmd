@@ -1,0 +1,36 @@
+---
+title: "Important code"
+author: "Bernardo Antunes"
+format: html
+editor: visual
+---
+
+## Terminal
+
+About package and environments management: [Introduction to GIS Programming - Miniconda](https://geog-312.gishub.org/book/software/miniconda.html)
+
+```{bash}
+conda create -n pythonenv python=3.12
+conda activate pythonenv
+conda install -n base mamba -c conda-forge
+mamba install -c conda-forge geemap leafmap
+conda env list
+conda env export --from-history > environment.yml
+conda env create -f environment.yml
+conda remove -n myenv --all
+conda install -n base mamba -c conda-forge
+mamba install -c conda-forge geemap leafmap
+```
+
+## Python
+
+## R
+
+After setting the Python environment.
+
+```{r}
+library(reticulate)
+
+use_condaenv("pythonenv", required = TRUE)
+py_config()
+```

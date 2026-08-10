@@ -1,0 +1,10 @@
+---
+title: "README"
+author: "Bernardo Antunes"
+format: html
+editor: visual
+---
+
+## Landscape Genetics Invasive Newts
+
+I start by creating this **README** file, the project structure (folders) and creating a miniconda environment **pythonenv** with important python packages. The reticulate package was also used to set the python environment to be used. I will add important code in the important code notebook.
