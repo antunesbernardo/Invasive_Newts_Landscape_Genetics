@@ -22,6 +22,24 @@ conda install -n base mamba -c conda-forge
 mamba install -c conda-forge geemap leafmap
 ```
 
+To set the [Github project](https://github.com/antunesbernardo/Invasive_Newts_Landscape_Genetics).
+
+```{bash}
+git --version
+git init
+git status
+git add
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/antunesbernardo/Invasive_Newts_Landscape_Genetics.git
+git remote -v
+git push -u origin main
+
+git add .
+git commit -m "Describe what you changed"
+git push
+```
+
 ## Python
 
 ## R
