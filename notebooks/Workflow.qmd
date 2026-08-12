@@ -1,3 +1,19 @@
+---
+title: "Invasive Newts Landscape Genetics"
+author: "Bernardo Antunes"
+format: html
+editor: visual
+---
+
+## Genetic data
+
+We first define the study areas based on the presumed release sites of *Triturus carnifex* and localities with available genetic data. Specifically, we delineate each study area as a circle extending 2 km beyond the maximum distance between release sites and genetic sampling localities. Here we also set the coordinate reference systems to be used for the geospatial analyses throughout the work.
+
+```{r}
+#| label: 01-create_study_areas
+#| eval: false
+
+
 library(terra)
 
 df_genetic <- read.csv("data/raw/tables/Genetic_data.csv")
@@ -35,3 +51,8 @@ for(i in 1:nrow(df_release)){
   )
   
 }
+```
+
+## Environmental data
+
+We follow to collect the environmental variables that may be relevant for the invasion process of *T. carnifex*. We start with a broad characterization using remote sensing data from Landsat satellites.
