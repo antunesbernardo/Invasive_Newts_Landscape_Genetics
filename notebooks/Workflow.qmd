@@ -7,52 +7,14 @@ editor: visual
 
 ## Genetic data
 
-We first define the study areas based on the presumed release sites of *Triturus carnifex* and localities with available genetic data. Specifically, we delineate each study area as a circle extending 2 km beyond the maximum distance between release sites and genetic sampling localities. Here we also set the coordinate reference systems to be used for the geospatial analyses throughout the work.
-
-```{r}
-#| label: 01-create_study_areas
-#| eval: false
-
-
-library(terra)
-
-df_genetic <- read.csv("data/raw/tables/Genetic_data.csv")
-df_release <- read.csv("data/raw/tables/Release_sites.csv")
-
-df_release$crs <- c("EPSG:28992", "EPSG:25832", "EPSG:25832")
-
-for(i in 1:nrow(df_release)){
-  region_name <- df_release[i,"Region"]
-  region_crs <- df_release[i,"crs"]
-  
-  df_release_tmp <- df_release[i,]
-  df_genetic_tmp <- df_genetic[df_genetic$Region == region_name,]
-  
-  coords_genetic <- vect(df_genetic_tmp,
-                         geom = c("Longitude", "Latitude"),
-                         crs = "EPSG:4326")  
-  coords_release <- vect(df_release_tmp,
-                         geom = c("Longitude", "Latitude"),
-                         crs = "EPSG:4326")
-  
-  max_distance_release <- max(distance(coords_release, coords_genetic))
-  
-  coords_release_proj <- project(coords_release, region_crs)
-  study_area <- buffer(coords_release_proj, width = max_distance_release + 2000)
-  
-  writeVector(
-    study_area,
-    paste0(
-      "data/created/vectors/study_area_",
-      region_name,
-      ".shp"
-    ),
-    overwrite = TRUE
-  )
-  
-}
-```
+We first define the study areas based on the presumed release sites of *Triturus carnifex* and localities with available genetic data. Specifically, we delineate each study area as a circle extending 2 km beyond the maximum distance between release sites and genetic sampling localities. Here we also set the coordinate reference systems to be used for the geospatial analyses throughout the work. See `scripts/R/01-create_study_areas.R`
 
 ## Environmental data
 
-We follow to collect the environmental variables that may be relevant for the invasion process of *T. carnifex*. We start with a broad characterization using remote sensing data from Landsat satellites.
+To capture environmental variables potentially relevant to the invasion process of *T. carnifex*, we compiled four indices representing distinct components of the environment: a vegetation greenness index (NDVI, Normalized Difference Vegetation Index), a surface water/moisture index (MNDWI, Modified Normalized Difference Water Index), a bare soil exposure index (BSI, Bare Soil Index), and a land surface thermal index (LST, Land Surface Temperature). For each index, we calculated the per-pixel median across the newts breeding season (March–July) for each year from 1985 to 2011, yielding a single annual composite per index. These annual composites were then combined across years into an overall median per index, representing typical environmental conditions over the study period. To characterize landscape change, we also estimated the intensity and direction of the temporal trend for each index. See `scripts/python/02-collect_Landsat_05_with_GEE.py`
+
+See issues in LST from Tubingen, likely related with its topography
+
+We also collect the digitial elevation model See `scripts/python/02-collect_NASA_DEM_with_GEE.py`
+
+And Land-cover at 10 m See `scripts/python/02-collect_Landcover_with_GEE.py`
