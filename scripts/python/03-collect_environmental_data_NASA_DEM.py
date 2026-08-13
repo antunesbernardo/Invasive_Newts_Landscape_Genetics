@@ -35,7 +35,7 @@ for study_area_id in list_study_areas:
     
     geemap.ee_export_image(
     elevation,
-    filename=f"data/created/rasters/elevation_{study_area_id}.tif",
+    filename=f"data/created/rasters/{study_area_id}/Elevation.tif",
     region=study_area_ee,
     scale=30,
     crs=crs_string,

@@ -16,7 +16,7 @@ import ee
 ee.Authenticate(auth_mode="localhost")
 ee.Initialize(project="gee-b-project")
 
-list_study_areas = ["Tubingen"]
+list_study_areas = ["Veluwe", "Isen", "Tubingen"]
 
 for study_area_id in list_study_areas:
 
@@ -174,7 +174,7 @@ for study_area_id in list_study_areas:
     # Export rasters
     geemap.ee_export_image(
         NDVI_median_image,
-        filename=f"data/created/rasters/ndvi_median_{study_area_id}.tif",
+        filename=f"data/created/rasters/{study_area_id}/NDVI.tif",
         region=study_area_ee,
         scale=30,
         crs=crs_string,
@@ -182,7 +182,7 @@ for study_area_id in list_study_areas:
     )
     geemap.ee_export_image(
         MNDWI_median_image,
-        filename=f"data/created/rasters/mndwi_median_{study_area_id}.tif",
+        filename=f"data/created/rasters/{study_area_id}/MNDWI.tif",
         region=study_area_ee,
         scale=30,
         crs=crs_string,
@@ -190,7 +190,7 @@ for study_area_id in list_study_areas:
     )
     geemap.ee_export_image(
         BSI_median_image,
-        filename=f"data/created/rasters/bsi_median_{study_area_id}.tif",
+        filename=f"data/created/rasters/{study_area_id}/BSI.tif",
         region=study_area_ee,
         scale=30,
         crs=crs_string,
@@ -240,7 +240,7 @@ for study_area_id in list_study_areas:
         # Exports
         geemap.ee_export_image(
             reliable_trend_export,
-            filename=f"data/created/rasters/{index.lower()}_trend_reliable_{study_area_id}.tif",
+            filename=f"data/created/rasters/{study_area_id}/{index}_trend_mask.tif",
             region=study_area_ee,
             scale=30,
             crs=crs_string,
@@ -249,7 +249,7 @@ for study_area_id in list_study_areas:
 
         geemap.ee_export_image(
             trend_slope,
-            filename=f"data/created/rasters/{index.lower()}_trend_{study_area_id}.tif",
+            filename=f"data/created/rasters/{study_area_id}/{index}_trend.tif",
             region=study_area_ee,
             scale=30,
             crs=crs_string,

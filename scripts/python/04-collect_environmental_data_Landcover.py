@@ -36,7 +36,7 @@ for study_area_id in list_study_areas:
     
   geemap.ee_export_image(
     landcover,
-    filename=f"data/created/rasters/landcover_{study_area_id}.tif",
+    filename=f"data/created/rasters/{study_area_id}/Landcover.tif",
     scale=10,
     region=study_area_ee,
     crs=crs_string,
