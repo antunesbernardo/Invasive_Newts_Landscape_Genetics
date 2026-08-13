@@ -38,9 +38,9 @@ for study_area_id in list_study_areas:
         shadow_conf = qa.rightShift(10).bitwiseAnd(3)
         cirrus_conf = qa.rightShift(14).bitwiseAnd(3)
         mask = (
-            cloud_conf.lt(3)
-            .And(shadow_conf.lt(3))
-            .And(cirrus_conf.lt(3))
+            cloud_conf.lt(2)
+            .And(shadow_conf.lt(2))
+            .And(cirrus_conf.lt(2))
         )
         return image.updateMask(mask)
 
@@ -85,11 +85,6 @@ for study_area_id in list_study_areas:
         ).rename('BSI')
         return image.addBands(bsi)
 
-    # Compute LST (Land Surface Temperature, in Celsius)
-    def compute_lst(image):
-        lst = image.select('Thermal').subtract(273.15).rename('LST')
-        return image.addBands(lst)
-
     # Collect images from Landsat 05 (see https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LT05_C02_T1_L2)
     landsat_collection = (
         ee.ImageCollection("LANDSAT/LT05/C02/T1_L2")
@@ -101,7 +96,6 @@ for study_area_id in list_study_areas:
         .map(compute_ndvi)
         .map(compute_mndwi)
         .map(compute_bsi)
-        .map(compute_lst)
     )
 
     # Compute median per year
@@ -118,7 +112,7 @@ for study_area_id in list_study_areas:
         yearly_collection = (
             landsat_collection
             .filterDate(start, end)
-            .select(["NDVI", "MNDWI", "BSI", "LST"])
+            .select(["NDVI", "MNDWI", "BSI"])
         )
 
         ndvi_median = (
@@ -142,18 +136,10 @@ for study_area_id in list_study_areas:
             .rename("BSI_median")
         )
 
-        lst_median = (
-            yearly_collection
-            .select("LST")
-            .median()
-            .rename("LST_median")
-        )
-
         yearly_image = (
             ndvi_median
             .addBands(mndwi_median)
             .addBands(bsi_median)
-            .addBands(lst_median)
             .clip(study_area_ee)
             .set("year", year)
         )
@@ -170,7 +156,6 @@ for study_area_id in list_study_areas:
     NDVI_median_image = landsat_per_year.select("NDVI_median").median()
     MNDWI_median_image = landsat_per_year.select("MNDWI_median").median()
     BSI_median_image = landsat_per_year.select("BSI_median").median()
-    LST_median_image = landsat_per_year.select("LST_median").median()
 
     # # Map results to explore
     # Map = geemap.Map()
@@ -211,23 +196,15 @@ for study_area_id in list_study_areas:
         crs=crs_string,
         file_per_band=False
     )
-    geemap.ee_export_image(
-        LST_median_image,
-        filename=f"data/created/rasters/lst_median_{study_area_id}.tif",
-        region=study_area_ee,
-        scale=30,
-        crs=crs_string,
-        file_per_band=False
-    )
 
-    # Characterize changes in NDVI, MNDWI, BSI, and LST
+    # Characterize changes in NDVI, MNDWI, and BSI
     def add_year_band(image):
         year = ee.Image.constant(image.getNumber("year")).rename("year").float()
         return image.addBands(year)
 
     NODATA_VALUE = -9999
 
-    indices = ["NDVI", "MNDWI", "BSI", "LST"]
+    indices = ["NDVI", "MNDWI", "BSI"]
 
     trend_results = {}  # keep references around in case you need them later
 
