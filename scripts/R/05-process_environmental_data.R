@@ -10,38 +10,33 @@ for(i in c("Veluwe", "Isen", "Tubingen")){
                           full.names = T)
   
   rst <- rast(list_vars[c(4,9,6,1,10,7,2)])
-  rst <- mask(rst, study_area)
-  plot(rst)
-  
+
   rst_topo <- terrain(rst$Elevation, v = c("slope",
                                             "TRI"))
   names(rst_topo) <- c("Slope", "TRI")
   rst <- c(rst, rst_topo)
-  plot(rst)
-  
+
   rst_landcover <- rast(list_vars[c(5)])
+  class_df <- data.frame(
+    value = 1:8,
+    label = c("Artificial_land", "Cropland", "Woodland", "Shrubland",
+              "Grassland", "Bare_land", "Water_permanent", "Wetland"))
+  rst_landcover_by_cat <- rast()
   
-  for(j in unique(values(rst_landcover))){
+  for(k in 1:nrow(class_df)){
     
+    rst_tmp <- rst_landcover
+    rst_tmp[] <- 0
+    rst_tmp[rst_landcover == class_df[k,"value"]] <- 100
+    rst_tmp <- project(rst_tmp, rst[[1]])
+    names(rst_tmp) <- class_df[k,"label"]
+    rst_landcover_by_cat <- c(rst_landcover_by_cat, rst_tmp)
   }
+  rst <- c(rst, rst_landcover_by_cat)
+  rst <- mask(rst, study_area)
+  plot(rst)
+  writeRaster(rst, paste0("data/created/rasters/",i,"/All_environmental_variables.tif"))
 }
 
-library(terra)     # or raster, depending on what "rst" is
-library(mapview)
-
-# Define the class codes, labels, and colors
-class_df <- data.frame(
-  value = 1:8,
-  label = c("Artificial land", "Cropland", "Woodland", "Shrubland",
-            "Grassland", "Bare land", "Water/permanent snow/ice", "Wetland"),
-  color = c("#CC0303", "#CDB400", "#235123", "#B76124",
-            "#92AF1F", "#F7E174", "#2019A4", "#AEC3D6")
-)
-
-# If rst is a SpatRaster (terra)
-levels(rst) <- class_df[, c("value", "label")]  # set as categorical
-rst <- as.factor(rst)
-
-# Plot with mapview using the matching color palette
-mapview(rst, col.regions = class_df$color, na.color = "transparent",
-        maxpixels = 3794704)
+rst_stack <- raster::stack(rst)
+mapview::mapview(rst_stack)

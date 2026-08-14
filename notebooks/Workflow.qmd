@@ -15,4 +15,16 @@ To capture environmental variables potentially relevant to the invasion process 
 
 To characterize topography, we obtained a [digital elevation model](https://developers.google.com/earth-engine/datasets/catalog/NASA_NASADEM_HGT_001) (DEM), from which we derived slope, aspect, Topographic Position Index (TPI), and Terrain Ruggedness Index (TRI). These variables were used to capture elevation, terrain steepness and orientation, local topographic position (e.g., ridges and valleys), and terrain heterogeneity, respectively. These variables were collected at a spatial resolution of 30 m. See `scripts/python/03-collect_environmental_data_NASA_DEM.py`
 
-To further characterize the landscape we collected land-cover variables in a binary (presence-absence) format from [ELC10](https://gee-community-catalog.org/projects/elc/#earth-engine-snippet). These variables were collected at a spatial resolution of 10 m. See `scripts/python/04-collect_environmental_data_Landcover.py`
+To further characterize the landscape we collected land-cover variables in a binary (presence-absence) format from [ELC10](https://gee-community-catalog.org/projects/elc/#earth-engine-snippet) at a spatial resolution of 10 m. These variables were then projected to 30 m to match the rest of the variables, and in the process converted to continuous format (0 to 100 %). See `scripts/python/04-collect_environmental_data_Landcover.py` and `scripts/R/05-process_environmental_data.R`
+
+## Landscape genetics
+
+Having both genetic and environmental data, we start with the landscape genetic workflow. The first task being estimating Euclidean geographic distances from the presumed release sites for each population locality with available genetic data. See `scripts/R/06-collect_distances_from_release_sites.R`
+
+Then we follow to create the baseline models that take into account only distance from release sites, time since release, and/or region as a random variable.
+
+Include Region and distance from release seems to result in the best models. The question is can we build a model that predicts well across regions? So a model that excludes that variable but gets to the same performance?
+
+Model from region is clearly better! time for introduction does not explain so well the differences...
+
+A parametric sigmoid model woul be more useful for later interpreations... HZAR package, maybe ask Tomek or Wiesiek.
