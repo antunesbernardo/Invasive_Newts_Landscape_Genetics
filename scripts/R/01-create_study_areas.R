@@ -27,10 +27,7 @@ for(i in 1:nrow(df_release)){
   writeVector(
     study_area,
     paste0(
-      "data/created/vectors/study_area_",
-      region_name,
-      ".shp"
-    ),
+      "data/created/vectors/",region_name,"/study_area.shp"),
     overwrite = TRUE
   )
   

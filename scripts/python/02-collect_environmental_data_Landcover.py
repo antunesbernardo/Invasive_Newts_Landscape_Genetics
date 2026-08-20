@@ -18,7 +18,7 @@ for study_area_id in list_study_areas:
   
   # Import study area
   study_area = gpd.read_file(
-    f"data/created/vectors/study_area_{study_area_id}.shp"
+    f"data/created/vectors/{study_area_id}/study_area.shp"
   )
   
   study_area_ee = geemap.geopandas_to_ee(study_area).geometry()

@@ -13,18 +13,89 @@ We first define the study areas based on the presumed release sites of *Triturus
 
 To capture environmental variables potentially relevant to the invasion process of *T. carnifex*, we collected data from [Landsat 5](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LT05_C02_T1_L2) and compiled three indices representing distinct components of the environment: a vegetation greenness index (NDVI, Normalized Difference Vegetation Index), a surface water/moisture index (MNDWI, Modified Normalized Difference Water Index), and a bare soil exposure index (BSI, Bare Soil Index). For each index, we calculated the per-pixel median across the newts breeding season (March–July) for each year from 1985 to 2011, yielding a single annual composite per index. These annual composites were then combined across years into an overall median per index, representing typical environmental conditions over the study period. To characterize landscape change, we also estimated the intensity and direction of the temporal trend for each index. These variables were collected at a spatial resolution of 30 m. See `scripts/python/02-collect_environmental_data_La`
 
-To characterize topography, we obtained a [digital elevation model](https://developers.google.com/earth-engine/datasets/catalog/NASA_NASADEM_HGT_001) (DEM), from which we derived slope, aspect, Topographic Position Index (TPI), and Terrain Ruggedness Index (TRI). These variables were used to capture elevation, terrain steepness and orientation, local topographic position (e.g., ridges and valleys), and terrain heterogeneity, respectively. These variables were collected at a spatial resolution of 30 m. See `scripts/python/03-collect_environmental_data_NASA_DEM.py`
+To characterize topography, we obtained a [digital elevation model](https://developers.google.com/earth-engine/datasets/catalog/NASA_NASADEM_HGT_001) (DEM), from which we derived slope, aspect, Topographic Position Index (TPI), and Terrain Ruggedness Index (TRI). These variables were used to capture elevation, terrain steepness and orientation, local topographic position (e.g., ridges and valleys), and terrain heterogeneity, respectively. These variables were collected at a spatial resolution of 30 m. See `scripts/python/02-collect_environmental_data_NASA_DEM.py`
 
-To further characterize the landscape we collected land-cover variables in a binary (presence-absence) format from [ELC10](https://gee-community-catalog.org/projects/elc/#earth-engine-snippet) at a spatial resolution of 10 m. These variables were then projected to 30 m to match the rest of the variables, and in the process converted to continuous format (0 to 100 %). See `scripts/python/04-collect_environmental_data_Landcover.py` and `scripts/R/05-process_environmental_data.R`
+To further characterize the landscape we collected land-cover variables in a binary (presence-absence) format from [ELC10](https://gee-community-catalog.org/projects/elc/#earth-engine-snippet) at a spatial resolution of 10 m. These variables were then projected to 30 m to match the rest of the variables, and in the process converted to continuous format (0 to 100 %). See `scripts/python/02-collect_environmental_data_Landcover.py`
+
+For all the variables, to further characterize landscape composition and configuration we used window of 270 m and obtained the mean and standard deviation for each variable. See `scripts/R/05-process_environmental_data.R`
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(terra)
+rst <- rast("../data/created/rasters/Veluwe/All_environmental_variables.tif")
+plot(rst[[c(12,29)]])
+```
+
+## Data preparation
+
+To prepare the final dataset, we estimated Euclidean geographic distances from the presumed release sites to each population locality with available genetic data. Environmental data were then extracted both between and within localities: between localities using straight-line corridors (1 km buffer strips) connecting release sites to populations, and within localities using 1 km buffer areas around each population location. This approach captured both landscape connectivity (via the corridors) and local environmental conditions (via the buffer areas). See `scripts/R/04-collect_distances_from_release_sites` and `scripts/R/05-extract_environmental_data.R`
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+library(knitr)
+df <- read.csv("../data/created/tables/landscape_genetics_data_with_env.csv")
+kable(head(df[,c(1,2,6,8,33,67)]))
+```
 
 ## Landscape genetics
 
-Having both genetic and environmental data, we start with the landscape genetic workflow. The first task being estimating Euclidean geographic distances from the presumed release sites for each population locality with available genetic data. See `scripts/R/06-collect_distances_from_release_sites.R`
+The obtained data was then used to identify the environmental drivers of hybridization. Specifically, we use a corridor-based random forest model, which allowed us to infer the role of each environmental variable (via importance and response curves plots). Leave one out spatial cross-validation using population localities was used to model parameter tuning and evaluation. See `scripts/R/08-corridor-based_RF_models.R`
 
-Then we follow to create the baseline models that take into account only distance from release sites, time since release, and/or region as a random variable.
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
 
-Include Region and distance from release seems to result in the best models. The question is can we build a model that predicts well across regions? So a model that excludes that variable but gets to the same performance?
+library(pdftools)
+pdf_convert("../output/figures/variable_importance_HI_nDNA_RF_model.pdf", format = "png", filename = "../output/figures/variable_importance_HI_nDNA_RF_model.png", dpi = 150)
+knitr::include_graphics("../output/figures/variable_importance_HI_nDNA_RF_model.png")
+```
 
-Model from region is clearly better! time for introduction does not explain so well the differences...
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
 
-A parametric sigmoid model woul be more useful for later interpreations... HZAR package, maybe ask Tomek or Wiesiek.
+
+library(pdftools)
+pdf_convert("../output/figures/response_curves_HI_nDNA_RF_model.pdf", format = "png", filename = "../output/figures/response_curves_HI_nDNA_RF_model.png", dpi = 150)
+knitr::include_graphics("../output/figures/response_curves_HI_nDNA_RF_model.png")
+```
+
+```{r}
+#| echo: false
+knitr::include_graphics("../output/figures/variable_importance_HI_nDNA_RF_model.png")
+```
+
+```{r}
+#| echo: false
+knitr::include_graphics("../output/figures/response_curves_HI_nDNA_RF_model.png")
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+library(terra)
+rst_Veluwe <- rast("../data/created/rasters/Veluwe/RF_model_resistance_Veluwe.tif")
+rst_Isen <- rast("../data/created/rasters/Isen/RF_model_resistance_Isen.tif")
+rst_Tubingen <- rast("../data/created/rasters/Tubingen/RF_model_resistance_Tubingen.tif")
+
+par(mfrow = c(1,3))
+plot(rst_Veluwe, main = "Resistance Veluwe")
+plot(rst_Isen, main = "Resistance Isen")
+plot(rst_Tubingen, main = "Resistance Tubingen")
+dev.off()
+```
+
+Apart from distance from the release sites, the proportion of Grassland and Bare_land within corridors connecting with the release site were identified as the most important variables to predict hybridization. With corridors with a percentage of Grassland lower than \~25% having higher hybridization; on the other side corridor with Bare_land higher than \~0% showed lower hybridization.
+
+Using that information we then follow to build a more robust model that could be directly compared with a NULL that only incorporated distance from release sites as a predictor, and regions as a random effect. See

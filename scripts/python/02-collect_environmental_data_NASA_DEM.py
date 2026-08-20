@@ -18,7 +18,7 @@ for study_area_id in list_study_areas:
 
     # Import study area
     study_area = gpd.read_file(
-        f"data/created/vectors/study_area_{study_area_id}.shp"
+        f"data/created/vectors/{study_area_id}/study_area.shp"
     )
     study_area_ee = geemap.geopandas_to_ee(study_area).geometry()
     print(study_area.crs)
@@ -37,7 +37,7 @@ for study_area_id in list_study_areas:
     elevation,
     filename=f"data/created/rasters/{study_area_id}/Elevation.tif",
     region=study_area_ee,
-    scale=30,
+    scale=100,
     crs=crs_string,
     file_per_band=False
     )
